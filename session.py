@@ -1,35 +1,39 @@
-import oauth2 as oauth
-from urllib.parse import parse_qsl
+from rauth.service import OAuth1Service, OAuth1Session
 import xmltodict
 
-import webbrowser
-from urls import request_token_url, authorize_url, access_token_url
+from urls import base_url, request_token_url, authorize_url, access_token_url
+
 
 class Session:
     """Handle OAuth sessions"""
     def __init__(self, oauth_key: str, oauth_secret: str):
-        consumer = oauth.Consumer(key=oauth_key,
-                                  secret=oauth_secret)
+        self.oauth_key = oauth_key
+        self.oauth_secret = oauth_secret
 
-        self.client = oauth.Client(consumer)
+    def get_authorize_url(self):
+        """Start outh and return authorization url."""
+        self.service = OAuth1Service(
+            consumer_key=self.oauth_key,
+            consumer_secret=self.oauth_secret,
+            name='goodreads',
+            request_token_url=request_token_url,
+            authorize_url=authorize_url,
+            access_token_url=access_token_url,
+            base_url=base_url
+        )
 
-    def authorize(self):
-        response, content = self.client.request(request_token_url, 'GET')
-        if response['status'] != '200':
-            raise Exception('Invalid response: %s' % response['status'])
+        self.request_token, self.request_token_secret = self.service.get_request_token(header_auth=True)
 
-        request_token = dict(parse_qsl(content.decode("utf-8")))
+        return self.service.get_authorize_url(self.request_token)
 
-        token = oauth.Token(request_token['oauth_token'],
-                            request_token['oauth_token_secret'])
+    def finish_authorization(self):
+        self.session = self.service.get_auth_session(self.request_token,
+                                                     self.request_token_secret)
 
-        authorize_link = '%s?oauth_token=%s' % (authorize_url,
-                                                token.key)
-        webbrowser.open(authorize_link)
-
-        print(token)
-
-
-if __name__ == "__main__":
-    session = Session("JXSdeANk24Z97P0AjH3Vsg", "TcZPrUAqtfAisrDE6plOV4ibvsCpBm4JJQDViXqc")
-    session.authorize()
+    def get(self, path, params=None):
+        """OAuth get request"""
+        if not params:
+            params = {}
+        base = "https://www.goodreads.com/"
+        resp = self.session.get(base + path, params=params)
+        return xmltodict.parse(resp.content)['GoodreadsResponse']
