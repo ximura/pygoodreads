@@ -1,0 +1,6 @@
+requests
+xmltodict
+rauth
+tox
+pytest
+mypy
