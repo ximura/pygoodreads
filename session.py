@@ -3,7 +3,7 @@ from urllib.parse import parse_qsl
 import xmltodict
 
 import webbrowser
-
+from urls import request_token_url, authorize_url, access_token_url
 
 class Session:
     """Handle OAuth sessions"""
@@ -14,10 +14,6 @@ class Session:
         self.client = oauth.Client(consumer)
 
     def authorize(self):
-        url = 'https://www.goodreads.com'
-        request_token_url = '%s/oauth/request_token' % url
-        authorize_url = '%s/oauth/authorize' % url
-
         response, content = self.client.request(request_token_url, 'GET')
         if response['status'] != '200':
             raise Exception('Invalid response: %s' % response['status'])
