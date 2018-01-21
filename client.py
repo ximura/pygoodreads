@@ -21,11 +21,11 @@ class Client:
         return user_id
 
     def author_info(self, author_id):
-        req = AuthorRequest()
+        req = AuthorRequest(self.session.oauth_key)
         return req.show(author_id)
 
     def author_books(self, author_id):
-        req = AuthorRequest()
+        req = AuthorRequest(self.session.oauth_key)
         return req.books(author_id)
 
     def _request_oauth(self, *args, **kwargs):

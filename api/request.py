@@ -15,12 +15,13 @@ class RequestException(Exception):
 
 
 class Request:
-    def __init__(self, req_format='xml'):
+    def __init__(self, dev_key, req_format='xml'):
         """Initialize request object."""
+        self.dev_key = dev_key
         self.req_format = req_format
 
     def request(self, path, params):
-        params.update({'key': 'JXSdeANk24Z97P0AjH3Vsg'})
+        params.update({'key': self.dev_key})
         resp = requests.get("%s/%s" % (base_url, path), params=params)
         if resp.status_code != 200:
             raise RequestException(resp.reason, path)
