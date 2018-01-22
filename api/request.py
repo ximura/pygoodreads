@@ -1,6 +1,5 @@
 import requests
 import xmltodict
-import json
 
 from urls import base_url
 
@@ -15,21 +14,34 @@ class RequestException(Exception):
 
 
 class Request:
-    def __init__(self, dev_key, req_format='xml'):
+    GET = "get"
+    POST = "post"
+    PUT = "put"
+
+    def __init__(self, dev_key=None, req_format='xml'):
         """Initialize request object."""
         self.dev_key = dev_key
         self.req_format = req_format
 
-    def request(self, path, params):
-        params.update({'key': self.dev_key})
-        resp = requests.get("%s/%s" % (base_url, path), params=params)
+    def get(self, path, params):
+        return self._request(Request.GET, path, params)
+
+    def post(self, path, params):
+        return self._request(Request.POST, path, params)
+
+    def put(self, path, params):
+        return self._request(Request.PUT, path, params)
+
+    def _request(self, method, path, params):
+        if self.dev_key:
+            params.update({'key': self.dev_key})
+
+        resp = requests.request(method=method, url="%s/%s" % (base_url, path), params=params)
         if resp.status_code != 200:
             raise RequestException(resp.reason, path)
         if self.req_format == 'xml':
             print(resp.content)
             data_dict = xmltodict.parse(resp.content)
             return data_dict['GoodreadsResponse']
-        elif self.req_format == 'json':
-            return json.loads(resp.content)
         else:
             raise Exception("Invalid format")
