@@ -18,10 +18,9 @@ class Request:
     POST = "post"
     PUT = "put"
 
-    def __init__(self, dev_key=None, req_format='xml'):
+    def __init__(self, dev_key=None):
         """Initialize request object."""
         self.dev_key = dev_key
-        self.req_format = req_format
 
     def get(self, path, params):
         return self._request(Request.GET, path, params)
@@ -39,9 +38,7 @@ class Request:
         resp = requests.request(method=method, url="%s/%s" % (base_url, path), params=params)
         if resp.status_code != 200:
             raise RequestException(resp.reason, path)
-        if self.req_format == 'xml':
-            print(resp.content)
-            data_dict = xmltodict.parse(resp.content)
-            return data_dict['GoodreadsResponse']
-        else:
-            raise Exception("Invalid format")
+
+        print(resp.content)
+        data_dict = xmltodict.parse(resp.content)
+        return data_dict['GoodreadsResponse']

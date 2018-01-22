@@ -34,6 +34,5 @@ class Session:
         """OAuth get request"""
         if not params:
             params = {}
-        base = "https://www.goodreads.com/"
-        resp = self.session.get(base + path, params=params)
+        resp = self.session.get(url="%s/%s" % (base_url, path), params=params)
         return xmltodict.parse(resp.content)['GoodreadsResponse']
