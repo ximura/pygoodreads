@@ -18,22 +18,34 @@ class Request:
     POST = "post"
     PUT = "put"
 
-    def __init__(self, dev_key=None):
+    def __init__(self, oauth_session=None):
         """Initialize request object."""
-        self.dev_key = dev_key
+        self.oauth_session = oauth_session
 
     def get(self, path, params):
-        return self._request(Request.GET, path, params)
+        return self._oath_request(Request.GET, path, params)
 
     def post(self, path, params):
-        return self._request(Request.POST, path, params)
+        return self._oath_request(Request.POST, path, params)
 
     def put(self, path, params):
-        return self._request(Request.PUT, path, params)
+        return self._oath_request(Request.PUT, path, params)
+
+    def _oath_request(self, method, path, params):
+        if self.oauth_session:
+            params.update({'key': self.oauth_session.oauth_key})
+
+        resp = self.oauth_session.session.request(method=method, url="%s/%s" % (base_url, path), params=params)
+        if resp.status_code != 200:
+            raise RequestException(resp.reason, path)
+
+        print(resp.content)
+        data_dict = xmltodict.parse(resp.content)
+        return data_dict['GoodreadsResponse']
 
     def _request(self, method, path, params):
-        if self.dev_key:
-            params.update({'key': self.dev_key})
+        if self.oauth_session:
+            params.update({'key': self.oauth_session.oauth_key})
 
         resp = requests.request(method=method, url="%s/%s" % (base_url, path), params=params)
         if resp.status_code != 200:

@@ -23,20 +23,21 @@ class Client:
 
     # author requests
     def author_info(self, author_id):
-        req = AuthorRequest(self.session.oauth_key)
+        req = AuthorRequest(self.session)
         return req.show(author_id)
 
     def author_books(self, author_id):
-        req = AuthorRequest(self.session.oauth_key)
+        req = AuthorRequest(self.session)
         return req.books(author_id)
 
     # shelf requests
     def shelf_add(self, shelf_name, book_id):
-        resp = self._request_oauth("shelf/add_to_shelf", {'name': shelf_name, 'book_id': book_id})
-        return resp
+        req = ShelfRequest(self.session)
+        #resp = self._request_oauth("shelf/add_to_shelf", {'name': shelf_name, 'book_id': book_id})
+        return req.add_book(shelf_name, book_id)
 
     def shelf_list(self, user_id):
-        req = ShelfRequest(self.session.oauth_key)
+        req = ShelfRequest(self.session)
         return req.list(user_id)
 
     # private methods
